@@ -15,15 +15,6 @@ var result = $('#result');
 //初始化分数
 var mark = 0;
 
-//开始游戏点击事件
-var start_btn = $('#start_btn');
-start_btn.click(function() {
-	start.css('display', 'none');
-	main.css('display', 'block');
-	score.css('display', 'block');
-	$(selfplane.imagenode).css('display','block');
-	
-});
 
 //创建飞机类
 function plane(hp, X, Y, sizeX, sizeY, mark, deathtime, speed, boomimage, imagesrc) {
@@ -116,3 +107,62 @@ function bullet(X, Y, sizeX, sizeY, imagesrc) {
 function fire(X, Y) {
 	bullet.call(this, X, Y, 6, 14, "img/bullet1.png");
 }
+
+//暂停事件
+var number=0;
+var zanting=function  () {
+	if (number==0) {
+		suspend.css('display','block');
+		if ($(document).unbind) {
+			main.unbind('mousemove',move,true);
+			body.unbind('mousemove',border,true);
+		} else if(document.detachEvent){
+			main.detachEvent('onmousemove',move);
+			body.detachEvent('onmousemove',border);
+		}
+		clearInterval(set);
+		number=1;
+	} else{
+		suspend.css('display','none');
+		if (document.addEventListener) {
+			main.addEventListener('mousemove',move,true);
+			body.addEventListener('mousemove',border,true);
+		} else if(document.attachEvent){
+			main.attachEvent('onmousemove',move);
+			body.attachEvent('onmousemove',border);
+		}
+		set=setInterval(start,20);
+		number=0;
+	}
+}
+
+//判断奔放飞机是否移出边界，如果移出边界，则取消mousemove事件，反之加上mousemove事件
+var border=function  () {
+	var oevent=window.event||arguments[0];
+	var bodyobjx=oevent.clientX;
+	var bodyobjy=oevent.clientY;
+	if (bodyobjx<0||bodyobjx>320||bodyobjy<0||bodyobjy>568) {
+		if (document.removeEventListener) {
+			main.removeEventListener('mousemove',move,true);
+		} else if(document.detachEvent){
+			main.detachEvent('onmousemove',move);
+		}
+	} else{
+		if (document.addEventListener) {
+			main.addEventListener('mousemove',move,true);
+		} else if(document.attachEvent){
+			main.attachEvent('onmousemove',move);
+		}
+	}
+}
+var body=$('body').eq(0);
+
+//开始游戏点击事件
+var start_btn = $('#start_btn');
+start_btn.click(function() {
+	start.css('display', 'none');
+	main.css('display', 'block');
+	score.css('display', 'block');
+	$(selfplane.imagenode).css('display','block');
+	
+});
