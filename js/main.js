@@ -1,3 +1,5 @@
+//获取整个body界面
+var body = document.getElementsByTagName('body')[0];
 //获取游戏主界面
 var main = document.getElementById('main');
 //获取开始游戏界面
@@ -52,11 +54,201 @@ function plane(hp, X, Y, width, height, score, deathtime, speed, boomimage, imag
 	this.init();
 }
 
+//创建子弹类
+function bullet(X, Y, width, height, imagesrc) {
+	this.bulletX = X;
+	this.bulletY = Y;
+	this.bulletimage = null;
+	this.bulletattach = 1;
+	this.bulletwidth = width;
+	this.bulletheight = height;
+
+	//移动行为
+	this.bulletmove = function() {
+		this.bulletimage.style.top = this.bulletimage.offsetTop - 20 + 'px';
+	}
+	this.init = function() {
+		this.bulletimage = document.createElement('img');
+		this.bulletimage.style.left = this.bulletX + "px";
+		this.bulletimage.style.left = this.bulletY + "px";
+		this.bulletimage.src = imagesrc;
+		main.appendChild(this.bulletimage);
+	}
+	this.init();
+}
+
+//创建单行子弹类
+function fire(X, Y) {
+	bullet.call(this, X, Y, 6, 14, 'img/bullet1.png');
+}
+
+//创建敌方飞机类
+function enemy(hp, a, b, width, height, score, deathtime, speed, boomimage, imagesrc) {
+	plane.call(this, hp, random(a, b), -200, width, height, score, deathtime, speed, boomimage, imagesrc);
+}
+
+//产生min到max之间的随机数
+function random(min, max) {
+	return Math.floor(min + Math.random() * (max - min));
+}
+
+//创建本方飞机类
+function ourplane(X, Y) {
+	var imagesrc = 'img/我的飞机.gif';
+	plane.call(this, 1, X, Y, 66, 80, 0, 660, 0, 'img/本方飞机爆炸.gif', imagesrc);
+	this.imagenode.setAttribute('id', 'ourplane');
+}
+
+//创建本方飞机
+var selfplane = new ourplane(125, 450);
+
+//移动事件
+var ourPlane = document.getElementById('ourplane');
+var move = function() {
+	var oevent = window.event || arguments[0];
+	var go = oevent.srcElement || oevent.target;
+	var selfplaneX = oevent.clientX;
+	var selfplaneY = oevent.clientY;
+	ourPlane.style.left = selfplaneX - selfplane.planewidth / 2 + "px";
+	ourPlane.style.top = selfplaneY - selfplane.planeheight / 2 + "px";
+}
+
+//暂停事件
+var number = 0;
+var zanting = function() {
+	if(number == 0) {
+		suspend.style.display = 'block';
+		if(document.removeEventListener) {
+			main.removeEventListener('mousemove', move, true);
+			body.removeEventListener('mousemove', border, true);
+		} else if(document.detachEvent) {
+			main.detachEvent('onmousemove', move);
+			body.detachEvent('onmousemove', border);
+		}
+		clearInterval(set);
+		number = 1;
+	} else {
+		suspend.style.display = 'none';
+		if(document.addEventListener) {
+			main.addEventListener('mousemove', move, true);
+			body.addEventListener('mousemove', border, true);
+		} else if(document.attachEvent) {
+			main.attachEvent('onmousemove', move);
+			body.attachEvent('onmousemove', border);
+		}
+		set = setInterval(begin, 40);
+		number = 0;
+	}
+}
+
+//判断本方飞机是否飞出边界，如果飞出边界，则移除mousemove事件，反之加上mousemove事件
+var border = function() {
+	var oevent = window.event || arguments[0];
+	var bodyobjX = oevent.clientX;
+	var bodyobjY = oevent.clientY;
+	if(bodyobjX < 0 || bodyobjX > 320 || bodyobjY < 0 || bodyobjY > 568) {
+		if(document.removeEventListener) {
+			main.removeEventListener('mousemove', move, true);
+		} else if(document.detachEvent) {
+			main.detachEvent('onmousemove', move);
+		}
+	} else {
+		if(document.addEventListener) {
+			main.addEventListener('mousemove', move, true);
+		} else if(document.attachEvent) {
+			main.attachEvent('onmousemove', move);
+		}
+	}
+}
+
+//暂停界面按钮事件
+if(document.addEventListener) {
+	main.addEventListener('mousemove', move, true);
+	selfplane.imagenode.addEventListener('click', zanting, true);
+	body.addEventListener('mousemove', border, true);
+	suspend.getElementsByTagName('button')[0].addEventListener('click', zanting, true);
+	suspend.getElementsByTagName('button')[2].addEventListener('click', again, true);
+} else if(document.attachEvent) {
+	main.attachEvent('onmousemove', move);
+	selfplane.imagenode.attachEvent('onclick', zanting);
+	body.attachEvent('onmousemove', border);
+	suspend.getElementsByTagName('button')[0].attachEvent('onclick', zanting);
+	suspend.getElementsByTagName('button')[2].attachEvent('onclick', again);
+}
+
+//初始化隐藏本方飞机
+selfplane.imagenode.style.display = "none";
+
+//敌机对象数组
+var enemys = [];
+
+//子弹对象数组
+var bullets = [];
+var mark = 0;
+var mark1 = 0;
+var backgroundPositionY = 0;
+
+//开始函数
+function begin() {
+	main.style.backgroundPositionY = backgroundPositionY + "px";
+	backgroundPositionY += 0.5;
+	if(backgroundPositionY == 568) {
+		backgroundPositionY = 0;
+	}
+	mark++;
+
+	//创建敌方飞机
+	if(mark == 20) {
+		mark1++;
+		//中飞机
+		if(mark1 % 5 == 0) {
+			enemys.push(new enemy(6, 30, 290, 46, 60, 50, 360, random(1, 3), 'img/中飞机爆炸.gif', 'img/enemy3_fly_1.png'))
+		}
+		//大飞机
+		if(mark1 == 20) {
+			enemys.push(new enemy(12, 60, 260, 110, 164, 100, 540, 1, 'img/大飞机爆炸.gif', 'img/enemy2_fly_1.png'));
+		} else {
+			enemys.push(new enemy(1, 10, 300, 34, 24, 10, 360, random(1, 6), 'img/小飞机爆炸.gif', 'img/enemy1_fly_1.png'));
+		}
+		mark = 0;
+	}
+
+	//移动敌方飞机
+	var enemyslen = enemys.length;
+	for(var i = 0; i < enemyslen; i++) {
+		if(enemys[i].planeisdie != true) {
+			enemys[i].planemove();
+		}
+
+		//如果敌方飞机超出边界，则删除敌机
+		if(enemys[i].imagenode.offsetTop > 568) {
+			main.removeChild(enemys[i].imagenode);
+			enemys.splice(i, 1);
+			enemyslen--;
+		}
+		//当敌方飞机死亡时，经过一段时间后清除敌机
+		if(enemys[i].planeisdie == true) {
+			enemys[i].planedeathtimes += 20;
+			if(enemys[i].planedeathtimes == enemys[i].planedeathtime) {
+				main.removeChild(enemys[i].imagenode);
+				enemys.splice(i, 1);
+				enemyslen--;
+			}
+		}
+	}
+	
+	//创建子弹
+	if (mark%5==0) {
+		
+	}
+}
 //点击开始游戏按钮事件
 var set;
 start_btn.onclick = function() {
 	start.style.display = 'none';
 	main.style.display = 'block';
+	selfplane.imagenode.style.display = 'block';
+	set = setInterval(begin, 40);
 }
 
 //点击结束界面中的继续游戏按钮事件

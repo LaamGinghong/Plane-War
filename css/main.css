@@ -45,6 +45,8 @@ button {
   display: none;
 }
 #suspend {
+  width: 150px;
+  height: 150px;
   position: absolute;
   top: 210px;
   left: 82px;
