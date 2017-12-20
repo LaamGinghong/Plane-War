@@ -70,7 +70,7 @@ function bullet(X, Y, width, height, imagesrc) {
 	this.init = function() {
 		this.bulletimage = document.createElement('img');
 		this.bulletimage.style.left = this.bulletX + "px";
-		this.bulletimage.style.left = this.bulletY + "px";
+		this.bulletimage.style.top = this.bulletY + "px";
 		this.bulletimage.src = imagesrc;
 		main.appendChild(this.bulletimage);
 	}
@@ -236,10 +236,35 @@ function begin() {
 			}
 		}
 	}
-	
+
 	//创建子弹
-	if (mark%5==0) {
-		
+	if(mark % 2 == 0) {
+		bullets.push(new fire(parseInt(selfplane.imagenode.style.left) + 31, parseInt(selfplane.imagenode.style.top) - 10));
+	}
+
+	//移动子弹
+	var bulletslen = bullets.length;
+	for(var i = 0; i < bulletslen; i++) {
+		bullets[i].bulletmove();
+
+		//如果子弹超出边界，则删除子弹
+		if(bullets[i].bulletimage.offsetTop < 0) {
+			main.removeChild(bullets[i].bulletimage);
+			bullets.splice(i, 1);
+			bulletslen--;
+		}
+	}
+
+	//碰撞判断
+	for(var k = 0; k < bulletslen; k++) {
+		for(var j = 0; j < enemyslen; j++) {
+			//判断碰撞本方飞机
+			if(enemys[j].planeisdie == false) {
+				if(enemys[j].imagenode.offsetLeft + enemys[j].planewidth >= selfplane.imagenode.offsetLeft && enemys[j].imagenode.offsetLeft <= selplane.imagenode.offsetLeft + selfplane.planewidth) {
+
+				}
+			}
+		}
 	}
 }
 //点击开始游戏按钮事件
