@@ -260,8 +260,41 @@ function begin() {
 		for(var j = 0; j < enemyslen; j++) {
 			//判断碰撞本方飞机
 			if(enemys[j].planeisdie == false) {
-				if(enemys[j].imagenode.offsetLeft + enemys[j].planewidth >= selfplane.imagenode.offsetLeft && enemys[j].imagenode.offsetLeft <= selplane.imagenode.offsetLeft + selfplane.planewidth) {
+				if(enemys[j].imagenode.offsetLeft + enemys[j].planewidth >= selfplane.imagenode.offsetLeft && enemys[j].imagenode.offsetLeft <= selfplane.imagenode.offsetLeft + selfplane.planewidth) {
+					if(enemys[j].imagenode.offsetTop + enemys[j].planeheight >= selfplane.imagenode.offsetTop + 40 && enemys[j].imagenode.offsetTop <= selfplane.imagenode.offsetTop - 20 + selfplane.planeheight) {
+						//碰撞本方飞机，游戏结束，统计分数
+						selfplane.imagenode.src = "img/本方飞机爆炸.gif";
+						end.style.display = 'block';
+						result.innerHTML = scores;
+						if(document.removeEventListener) {
+							main.removeEventListener('mousemove', move, true);
+							body.removeEventListener('mousemove', border, true);
+						} else if(document.detachEvent) {
+							main.detachEvent('onmousemove', move);
+							body.detachEvent('onmousemove', border);
+						}
+						clearInterval(set);
+					}
+				}
+			}
 
+			//判断子弹与敌机碰撞
+			if(bullets[k].bulletimage.offsetLeft + bullets[k].bulletwidth > enemys[j].imagenode.offsetLeft && bullets[k].bulletimage.offsetLeft < enemys[j].imagenode.offsetLeft + enemys[j].planewidth) {
+				if (bullets[k].bulletimage.offsetTop<=enemys[j].imagenode.offsetTop+enemys[j].planeheight&&bullets[k].bulletimage.offsetTop+bullets[k].bulletheight>=enemys[j].imagenode.offsetTop) {
+					//敌机血量等于收到的子弹攻击力
+					enemys[j].planehp=enemys[j].planehp-bullets[k].bulletattach;
+					//当敌机血量为0，低级图片还为爆炸图片，死亡标记为true,计算得分
+					if (enemys[j].planehp==0) {
+						scores=scores+enemys[j].planescore;
+						label.innerHTML=scores;
+						enemys[j].imagenode.src=enemys[j].planeboomimage;
+						enemys[j].planeisdie=true;
+					}
+					//删除子弹
+					main.removeChild(bullets[k].bulletimage);
+					bullets.splice(k,1);
+					bulletslen--;
+					break;
 				}
 			}
 		}
